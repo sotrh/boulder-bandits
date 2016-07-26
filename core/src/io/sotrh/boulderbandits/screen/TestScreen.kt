@@ -2,28 +2,39 @@ package io.sotrh.boulderbandits.screen
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import io.sotrh.boulderbandits.map.MapBuilder
 import io.sotrh.boulderbandits.map.contains
 import io.sotrh.boulderbandits.util.MOVEMENT_SPEED
 import io.sotrh.boulderbandits.util.doRender
 import io.sotrh.boulderbandits.util.p2m
+import io.sotrh.boulderbandits.util.top
 
 class TestScreen : BaseScreen() {
 
     private var width = 0f
     private var height = 0f
-    private var camera = lazy { OrthographicCamera() }.value
-    private var render = lazy { ShapeRenderer() }.value
+
+    private lateinit var camera:OrthographicCamera
+    private lateinit var render:ShapeRenderer
+    private lateinit var batch:SpriteBatch
+    private lateinit var font:BitmapFont
+
     private var map = lazy {
         MapBuilder(16).checker().build()
     }.value
 
     override fun show() {
-
+        camera = OrthographicCamera()
+        render = ShapeRenderer()
+        batch = SpriteBatch()
+        font = BitmapFont()
     }
 
     override fun resize(width: Int, height: Int) {
@@ -40,6 +51,7 @@ class TestScreen : BaseScreen() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
         processInput(delta)
 
+        // render the map
         render.doRender(camera) {
             map.cells.forEach {
                 it.forEach {
@@ -56,6 +68,11 @@ class TestScreen : BaseScreen() {
                     if (it in camera) rect(it.x, it.y, 1f, 1f)
                 }
             }
+        }
+
+        // render the fps
+        batch.doRender {
+            font.draw(this, "FPS: ${Gdx.graphics.framesPerSecond}", 10f, 10f.top())
         }
     }
 
