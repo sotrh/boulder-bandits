@@ -25,6 +25,5 @@ inline fun ShapeRenderer.doRender(shapeType:ShapeRenderer.ShapeType, block:Shape
 }
 inline fun ShapeRenderer.doRender(camera: Camera, shapeType: ShapeRenderer.ShapeType = ShapeRenderer.ShapeType.Filled, block: ShapeRenderer.() -> Unit): ShapeRenderer {
     projectionMatrix = camera.combined
-    doRender(shapeType, block)
-    return this
+    return doRender(shapeType, block)
 }
