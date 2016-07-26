@@ -20,10 +20,10 @@ class Map(val size:Int, val x:Float=0f, val y:Float=0f) {
         }
     }
 
-    operator fun get(x: Float, y: Float): Cell = cells[(this.x - x).toInt()][(this.y - y).toInt()]
+    operator fun get(x: Float, y: Float): Cell = cells[(x - this.x).toInt()][(y - this.y).toInt()]
 //    fun contains(x: Float, y: Float): Boolean = (x >= this.x) && (y >= this.y) && (x <= this.x + size) && (y <= this.y + size)
 
-    inner class Cell(val type:Int, val x:Float, val y:Float) {
+    inner class Cell(var type:Int, val x:Float, val y:Float) {
 
     }
 }
