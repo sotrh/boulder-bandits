@@ -92,6 +92,8 @@ class TestScreen : BaseScreen() {
 
     override fun dispose() {
         render.dispose()
+        batch.dispose()
+        font.dispose()
     }
 
 }
