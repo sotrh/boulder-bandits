@@ -63,10 +63,10 @@ class TestScreen : BaseScreen() {
             boxInstance = ModelInstance(boxModel)
 
             groundModel = createRect(
-                    0f, 0f, 0f,
-                    1f, 0f, 0f,
-                    1f, 0f, 1f,
-                    0f, 0f, 1f,
+                    0f, 0f, 0f, // v0 bot right
+                    0f, 0f, 1f, // v1 top right
+                    1f, 0f, 1f, // v2 top left
+                    1f, 0f, 0f, // v4 bot left
                     0f, 1f, 0f,
                     Material(ColorAttribute.createDiffuse(Color.WHITE)),
                     (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong()
@@ -117,6 +117,10 @@ class TestScreen : BaseScreen() {
                         boxInstance.transform.setTranslation(Vector3(x - 0.5f, 0.5f, y - 0.5f))
                         boxInstance.calculateTransforms()
                         modelBatch.render(boxInstance, environment)
+                    } else {
+                        groundInstance.transform.setTranslation(Vector3(x - 1f, 0f, y - 1f))
+                        groundInstance.calculateTransforms()
+                        modelBatch.render(groundInstance, environment)
                     }
                 }
             }
