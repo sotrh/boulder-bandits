@@ -18,6 +18,9 @@ fun Int.m2p(scale:Float = PIXELS_TO_METERS) = this * scale
 fun Float.p2m(scale:Float = PIXELS_TO_METERS) = this / scale
 fun Float.m2p(scale: Float = PIXELS_TO_METERS) = this * scale
 
+fun Int.f() = this.toFloat()
+fun Float.i() = this.toInt()
+
 // spacing extensions
 fun Float.top() = Gdx.graphics.height - this
 fun Float.right() = Gdx.graphics.width - this

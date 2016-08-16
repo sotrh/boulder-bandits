@@ -13,11 +13,15 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
+import com.badlogic.gdx.math.MathUtils
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
+import io.sotrh.boulderbandits.camera.OrbitCamera
 import io.sotrh.boulderbandits.map.Map
 import io.sotrh.boulderbandits.map.MapBuilder
 import io.sotrh.boulderbandits.util.MOVEMENT_SPEED
 import io.sotrh.boulderbandits.util.doRender
+import io.sotrh.boulderbandits.util.f
 import io.sotrh.boulderbandits.util.top
 
 class TestScreen : BaseScreen() {
@@ -32,8 +36,8 @@ class TestScreen : BaseScreen() {
     private lateinit var font:BitmapFont
 
     // 3d camera stuff
-    private lateinit var camera:PerspectiveCamera
-    private lateinit var cameraController: CameraInputController
+    private lateinit var playerPosition:Vector3
+    private lateinit var camera:OrbitCamera
 
     // 3d stuff
     private lateinit var environment: Environment
@@ -45,10 +49,12 @@ class TestScreen : BaseScreen() {
 
     override fun show() {
         modelBatch = ModelBatch()
-        camera = PerspectiveCamera()
+        camera = OrbitCamera()
         batch = SpriteBatch()
         font = BitmapFont()
         map = MapBuilder(16).checker().build()
+
+        playerPosition = Vector3(map.size * 0.5f, 0f, map.size * 0.5f)
 
         createModels()
         createEnvironment()
@@ -88,18 +94,16 @@ class TestScreen : BaseScreen() {
     }
 
     private fun setupCamera() {
-        camera.apply {
+        camera.doUpdate {
             fieldOfView = 60f
             near = 0.1f
             far = 100f
             viewportWidth = width
             viewportHeight = height
-            lookAt(map.size * 0.5f, 0f, map.size * 0.5f)
-            position.set(0f, 3f, -3f)
-        }.update()
-
-        cameraController = CameraInputController(camera)
-        Gdx.input.inputProcessor = cameraController
+            radius = 5.0f
+            verticalAngle = MathUtils.PI / 4
+            lookAt = playerPosition
+        }
     }
 
     override fun render(delta: Float) {
@@ -107,12 +111,11 @@ class TestScreen : BaseScreen() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
         processInput(delta)
-        cameraController.update()
 
         modelBatch.begin(camera)
         for (x in 0..map.size-1) {
             for (y in 0..map.size-1) {
-                map[x.toFloat(), y.toFloat()].apply {
+                map[x.f(), y.f()].apply {
                     if (type > 0) {
                         boxInstance.transform.setTranslation(Vector3(x - 0.5f, 0.5f, y - 0.5f))
                         boxInstance.calculateTransforms()
@@ -137,14 +140,25 @@ class TestScreen : BaseScreen() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) Gdx.app.exit()
 
         // Camera movements
-        camera.position.apply {
-            val speed = delta * MOVEMENT_SPEED
-            if (Gdx.input.isKeyPressed(Input.Keys.W)) y += speed
-            if (Gdx.input.isKeyPressed(Input.Keys.S)) y -= speed
-            if (Gdx.input.isKeyPressed(Input.Keys.D)) x += speed
-            if (Gdx.input.isKeyPressed(Input.Keys.A)) x -= speed
+        val speed = delta * MOVEMENT_SPEED
+        val movement = Vector2().apply {
+            if (Gdx.input.isKeyPressed(Input.Keys.W)) y = -speed
+            if (Gdx.input.isKeyPressed(Input.Keys.S)) y = speed
+            if (Gdx.input.isKeyPressed(Input.Keys.D)) x = speed
+            if (Gdx.input.isKeyPressed(Input.Keys.A)) x = -speed
         }
-        camera.update()
+        val rotation = Vector2().apply {
+            if (Gdx.input.isKeyPressed(Input.Keys.UP)) y = speed
+            if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) y = -speed
+            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) x = -speed
+            if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) x = speed
+        }
+
+        camera.doUpdate {
+            moveRelative(movement.y, movement.x)
+            horizontalAngle += rotation.x
+            verticalAngle += rotation.y
+        }
     }
 
     override fun dispose() {
